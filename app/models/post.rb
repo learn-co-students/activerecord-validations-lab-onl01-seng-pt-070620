@@ -1,8 +1,23 @@
 class Post < ActiveRecord::Base
-    include ActiveModel::Validations
-    validates_with ClickbaitValidator
     validates :title, presence: true
-    # validates :title, clickbait: true, inclusion: {in: %w(Won't Believe Secret Top[number] Guess)}
-    validates :content, length: {is: 250}
+    validates :content, length: { minimum: 250 }
+    validates :summary, length: { maximum: 250 }
     validates :category, inclusion: {in: %w(Fiction Non-Fiction)}
+    validate :validate_clickbait?
+
+    CLICKBAIT = [
+        /Won't Believe/i,
+        /Secret/i,
+        /Top [0-9]*/i,
+        /Guess/i
+       ]
+
+   def validate_clickbait?
+       if CLICKBAIT.none?{|t| t.match title}
+           errors.add(:title, ("this is clickbait"))
+       end
+   end
+
 end
+
+
